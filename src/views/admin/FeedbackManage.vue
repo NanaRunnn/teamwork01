@@ -47,17 +47,20 @@ onMounted(async () => {
         <div>
           <p class="count">共 {{ feedbacks.length }} 条反馈记录</p>
         </div>
-        <el-select
-          v-model="statusFilter"
-          class="status-select"
-          placeholder="全部状态"
-          @change="loadFeedbacks"
-        >
-          <el-option label="全部状态" value="" />
-          <el-option label="未处理" :value="0" />
-          <el-option label="已指派" :value="1" />
-          <el-option label="已确认" :value="2" />
-        </el-select>
+        <div class="toolbar-actions">
+          <el-button @click="$router.push('/admin/statistics')">统计管理</el-button>
+          <el-select
+            v-model="statusFilter"
+            class="status-select"
+            placeholder="全部状态"
+            @change="loadFeedbacks"
+          >
+            <el-option label="全部状态" value="" />
+            <el-option label="未处理" :value="0" />
+            <el-option label="已指派" :value="1" />
+            <el-option label="已确认" :value="2" />
+          </el-select>
+        </div>
       </div>
 
       <el-table
@@ -135,6 +138,12 @@ onMounted(async () => {
   width: 160px;
 }
 
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .feedback-table {
   width: 100%;
 }
@@ -160,6 +169,11 @@ onMounted(async () => {
 
   .status-select {
     width: 100%;
+  }
+
+  .toolbar-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 </style>
