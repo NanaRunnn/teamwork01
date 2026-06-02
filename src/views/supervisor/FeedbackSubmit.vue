@@ -1,32 +1,60 @@
 <script setup>
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ChatLineRound, Location, Upload } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { saveAqiFeedback } from '../../api/aqiFeedback'
+import { listGridCityByProvinceId } from '../../api/gridCity'
+import { listGridProvinceAll } from '../../api/gridProvince'
 import SupervisorShell from '../../components/SupervisorShell.vue'
 import { getSupervisorUser } from '../../utils/auth'
 import { getAqiLevel } from '../../utils/aqi'
 
 const router = useRouter()
-
-const districtOptions = [
-  { label: '朝阳区', value: 'chaoyang' },
-  { label: '海淀区', value: 'haidian' },
-  { label: '丰台区', value: 'fengtai' },
-]
+const provinceOptions = ref([])
+const cityOptions = ref([])
+const cityLoading = ref(false)
 
 const form = reactive({
-  district: '',
+  provinceId: '',
+  cityId: '',
   aqi: 80,
   content: '',
 })
 
-const selectedDistrictName = computed(() => {
-  return districtOptions.find((item) => item.value === form.district)?.label || ''
+const selectedProvince = computed(() => {
+  return provinceOptions.value.find((item) => item.id === form.provinceId)
+})
+
+const selectedCity = computed(() => {
+  return cityOptions.value.find((item) => item.id === form.cityId)
 })
 
 const aqiLevel = computed(() => getAqiLevel(form.aqi))
+
+async function loadProvinces() {
+  const result = await listGridProvinceAll()
+  provinceOptions.value = result.data || []
+
+  if (provinceOptions.value.length && !form.provinceId) {
+    form.provinceId = provinceOptions.value[0].id
+    await loadCities()
+  }
+}
+
+async function loadCities() {
+  form.cityId = ''
+
+  if (!form.provinceId) {
+    cityOptions.value = []
+    return
+  }
+
+  cityLoading.value = true
+  const result = await listGridCityByProvinceId(form.provinceId)
+  cityOptions.value = result.data || []
+  cityLoading.value = false
+}
 
 async function submitFeedback() {
   const user = getSupervisorUser()
@@ -37,7 +65,7 @@ async function submitFeedback() {
     return
   }
 
-  if (!form.district || !form.content.trim()) {
+  if (!form.provinceId || !form.cityId || !form.content.trim()) {
     ElMessage.warning('请选择网格地址并填写反馈内容')
     return
   }
@@ -45,10 +73,10 @@ async function submitFeedback() {
   const payload = {
     supervisorId: user.id,
     supervisorName: user.realName,
-    provinceId: 'beijing',
-    provinceName: '北京市',
-    cityId: form.district,
-    cityName: selectedDistrictName.value,
+    provinceId: form.provinceId,
+    provinceName: selectedProvince.value?.name || '',
+    cityId: form.cityId,
+    cityName: selectedCity.value?.name || '',
     estimatedAqi: form.aqi,
     level: aqiLevel.value.text,
     description: form.content.trim(),
@@ -63,30 +91,51 @@ async function submitFeedback() {
 
   console.log('空气质量反馈表单数据:', result.data)
   ElMessage.success(result.message)
-  form.district = ''
+  form.cityId = ''
   form.aqi = 80
   form.content = ''
   router.push('/supervisor/history')
 }
+
+onMounted(loadProvinces)
 </script>
 
 <template>
   <SupervisorShell title="提交所在网格空气情况">
     <el-form class="feedback-form" label-position="top">
       <el-form-item label="网格地址">
-        <el-select
-          v-model="form.district"
-          class="field-control"
-          placeholder="请选择所在区域"
-          size="large"
-        >
-          <el-option
-            v-for="item in districtOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        <div class="region-grid">
+          <el-select
+            v-model="form.provinceId"
+            class="field-control"
+            placeholder="请选择省份"
+            size="large"
+            @change="loadCities"
+          >
+            <el-option
+              v-for="item in provinceOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+
+          <el-select
+            v-model="form.cityId"
+            class="field-control"
+            :disabled="!form.provinceId"
+            :loading="cityLoading"
+            placeholder="请选择网格区域"
+            size="large"
+          >
+            <el-option
+              v-for="item in cityOptions"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </div>
       </el-form-item>
 
       <el-form-item label="空气质量指数等级">
@@ -135,7 +184,7 @@ async function submitFeedback() {
     <el-footer class="page-footer">
       <div class="footer-item">
         <el-icon><Location /></el-icon>
-        <span>{{ selectedDistrictName || '未选择网格' }}</span>
+        <span>{{ selectedCity?.name || '未选择网格' }}</span>
       </div>
       <div class="footer-item">
         <el-icon><ChatLineRound /></el-icon>
@@ -156,6 +205,13 @@ async function submitFeedback() {
 
 .field-control {
   width: 100%;
+}
+
+.region-grid {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .slider-panel {
@@ -218,6 +274,10 @@ async function submitFeedback() {
 @media (max-width: 480px) {
   .feedback-form {
     padding: 18px 14px;
+  }
+
+  .region-grid {
+    grid-template-columns: 1fr;
   }
 
   .slider-panel {

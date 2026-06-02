@@ -1,4 +1,5 @@
 import { getAqiLevel } from '../utils/aqi'
+import { getGridCityCount } from './gridRegion'
 
 const STATISTICS_KEY = 'nep_mock_statistics'
 
@@ -62,6 +63,51 @@ const fallbackStatistics = [
     pm25: 41,
     aqi: 48,
     confirmTime: '2026-06-02 12:05:00',
+  },
+  {
+    id: 'T005',
+    feedbackId: 'F005',
+    gridMemberId: 'G004',
+    gridMemberName: '陈七',
+    provinceId: 'shanghai',
+    provinceName: '上海市',
+    cityId: 'pudong',
+    cityName: '浦东新区',
+    so2: 19.6,
+    co: 0.9,
+    pm25: 58,
+    aqi: 92,
+    confirmTime: '2026-06-02 13:15:00',
+  },
+  {
+    id: 'T006',
+    feedbackId: 'F006',
+    gridMemberId: 'G006',
+    gridMemberName: '吴九',
+    provinceId: 'guangdong',
+    provinceName: '广东省',
+    cityId: 'guangzhou',
+    cityName: '广州市',
+    so2: 25.4,
+    co: 1.2,
+    pm25: 88,
+    aqi: 136,
+    confirmTime: '2026-06-02 14:05:00',
+  },
+  {
+    id: 'T007',
+    feedbackId: 'F007',
+    gridMemberId: 'G008',
+    gridMemberName: '孙一',
+    provinceId: 'jiangsu',
+    provinceName: '江苏省',
+    cityId: 'nanjing',
+    cityName: '南京市',
+    so2: 17.3,
+    co: 0.7,
+    pm25: 46,
+    aqi: 65,
+    confirmTime: '2026-06-02 15:20:00',
   },
 ]
 
@@ -179,8 +225,8 @@ export function mockListPm25OverLimitStatis() {
 
 export function mockListGridCoverageStatis() {
   const statistics = readStatistics()
-  const coveredCities = new Set(statistics.map((item) => item.cityName)).size
-  const totalCities = 3
+  const coveredCities = new Set(statistics.map((item) => item.cityId || item.cityName)).size
+  const totalCities = getGridCityCount()
 
   return {
     code: 200,
