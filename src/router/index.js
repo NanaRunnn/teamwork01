@@ -37,6 +37,16 @@ const routes = [
     component: () => import('../views/grid/TaskList.vue'),
   },
   {
+    path: '/grid/task/:id',
+    name: 'grid-task-detail',
+    component: () => import('../views/grid/TaskDetail.vue'),
+  },
+  {
+    path: '/grid/confirm/:id',
+    name: 'grid-confirm',
+    component: () => import('../views/grid/ConfirmAqi.vue'),
+  },
+  {
     path: '/admin/login',
     name: 'admin-login',
     component: () => import('../views/admin/Login.vue'),

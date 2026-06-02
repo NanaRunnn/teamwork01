@@ -64,6 +64,18 @@ export function mockListAqiFeedbackAll(filters = {}) {
   }
 }
 
+export function mockListAqiFeedbackByGridMemberId(gridMemberId) {
+  const feedbacks = readFeedbacks().filter(
+    (item) => item.gridMemberId === gridMemberId,
+  )
+
+  return {
+    code: 200,
+    message: 'success',
+    data: feedbacks,
+  }
+}
+
 export function mockGetAqiFeedbackById(id) {
   const feedback = readFeedbacks().find((item) => item.id === id)
 
@@ -106,6 +118,33 @@ export function mockAssignAqiFeedback(payload) {
   return {
     code: 200,
     message: '指派成功',
+    data: target,
+  }
+}
+
+export function mockConfirmAqiFeedback(payload) {
+  const feedbacks = readFeedbacks()
+  const target = feedbacks.find((item) => item.id === payload.feedbackId)
+
+  if (!target) {
+    return {
+      code: 404,
+      message: '未找到反馈信息',
+      data: null,
+    }
+  }
+
+  Object.assign(target, {
+    status: 2,
+    confirmTime: payload.confirmTime,
+    confirmedAqi: payload.aqi,
+  })
+
+  writeFeedbacks(feedbacks)
+
+  return {
+    code: 200,
+    message: '确认成功',
     data: target,
   }
 }

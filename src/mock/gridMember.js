@@ -2,6 +2,7 @@ const gridMembers = [
   {
     id: 'G001',
     code: 'GM001',
+    password: '123456',
     realName: '李四',
     phone: '13900139000',
     provinceId: 'beijing',
@@ -12,6 +13,7 @@ const gridMembers = [
   {
     id: 'G002',
     code: 'GM002',
+    password: '123456',
     realName: '王五',
     phone: '13900139001',
     provinceId: 'beijing',
@@ -22,6 +24,7 @@ const gridMembers = [
   {
     id: 'G003',
     code: 'GM003',
+    password: '123456',
     realName: '赵六',
     phone: '13900139002',
     provinceId: 'beijing',
@@ -30,6 +33,34 @@ const gridMembers = [
     workStatus: 1,
   },
 ]
+
+function removePassword(user) {
+  const { password, ...safeUser } = user
+  return safeUser
+}
+
+export function mockLoginGridMember(payload) {
+  const user = gridMembers.find(
+    (item) => item.code === payload.code && item.password === payload.password,
+  )
+
+  if (!user) {
+    return {
+      code: 400,
+      message: '网格员编码或密码错误',
+      data: null,
+    }
+  }
+
+  return {
+    code: 200,
+    message: '登录成功',
+    data: {
+      ...removePassword(user),
+      role: 'grid',
+    },
+  }
+}
 
 export function mockListGridMemberByProvinceId(filters = {}) {
   const members = gridMembers.filter((item) => {

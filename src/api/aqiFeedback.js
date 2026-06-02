@@ -1,7 +1,9 @@
 import {
   mockAssignAqiFeedback,
+  mockConfirmAqiFeedback,
   mockGetAqiFeedbackById,
   mockListAqiFeedbackAll,
+  mockListAqiFeedbackByGridMemberId,
   mockListAqiFeedbackBySupervisorId,
   mockSaveAqiFeedback,
 } from '../mock/feedback'
@@ -24,4 +26,12 @@ export async function getAqiFeedbackById(id) {
 
 export async function assignAqiFeedback(payload) {
   return mockAssignAqiFeedback(payload)
+}
+
+export async function listAqiFeedbackByGridMemberId(gridMemberId) {
+  return mockListAqiFeedbackByGridMemberId(gridMemberId)
+}
+
+export async function confirmAqiFeedback(payload) {
+  return mockConfirmAqiFeedback(payload)
 }

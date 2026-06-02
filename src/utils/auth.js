@@ -1,5 +1,6 @@
 const SUPERVISOR_USER_KEY = 'nep_supervisor_user'
 const ADMIN_USER_KEY = 'nep_admin_user'
+const GRID_USER_KEY = 'nep_grid_user'
 
 function readUser(key) {
   const raw = localStorage.getItem(key)
@@ -42,4 +43,16 @@ export function setAdminUser(user) {
 
 export function clearAdminUser() {
   localStorage.removeItem(ADMIN_USER_KEY)
+}
+
+export function getGridUser() {
+  return readUser(GRID_USER_KEY)
+}
+
+export function setGridUser(user) {
+  writeUser(GRID_USER_KEY, user)
+}
+
+export function clearGridUser() {
+  localStorage.removeItem(GRID_USER_KEY)
 }
