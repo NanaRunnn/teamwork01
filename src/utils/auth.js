@@ -1,7 +1,8 @@
-const USER_KEY = 'nep_supervisor_user'
+const SUPERVISOR_USER_KEY = 'nep_supervisor_user'
+const ADMIN_USER_KEY = 'nep_admin_user'
 
-export function getSupervisorUser() {
-  const raw = localStorage.getItem(USER_KEY)
+function readUser(key) {
+  const raw = localStorage.getItem(key)
 
   if (!raw) {
     return null
@@ -10,15 +11,35 @@ export function getSupervisorUser() {
   try {
     return JSON.parse(raw)
   } catch {
-    localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(key)
     return null
   }
 }
 
+function writeUser(key, user) {
+  localStorage.setItem(key, JSON.stringify(user))
+}
+
+export function getSupervisorUser() {
+  return readUser(SUPERVISOR_USER_KEY)
+}
+
 export function setSupervisorUser(user) {
-  localStorage.setItem(USER_KEY, JSON.stringify(user))
+  writeUser(SUPERVISOR_USER_KEY, user)
 }
 
 export function clearSupervisorUser() {
-  localStorage.removeItem(USER_KEY)
+  localStorage.removeItem(SUPERVISOR_USER_KEY)
+}
+
+export function getAdminUser() {
+  return readUser(ADMIN_USER_KEY)
+}
+
+export function setAdminUser(user) {
+  writeUser(ADMIN_USER_KEY, user)
+}
+
+export function clearAdminUser() {
+  localStorage.removeItem(ADMIN_USER_KEY)
 }

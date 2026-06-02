@@ -47,6 +47,11 @@ const routes = [
     component: () => import('../views/admin/FeedbackManage.vue'),
   },
   {
+    path: '/admin/assign/:id',
+    name: 'admin-assign',
+    component: () => import('../views/admin/AssignGridMember.vue'),
+  },
+  {
     path: '/decision/dashboard',
     name: 'decision-dashboard',
     component: () => import('../views/decision/Dashboard.vue'),

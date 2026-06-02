@@ -49,3 +49,63 @@ export function mockListAqiFeedbackBySupervisorId(supervisorId) {
     data: feedbacks,
   }
 }
+
+export function mockListAqiFeedbackAll(filters = {}) {
+  let feedbacks = readFeedbacks()
+
+  if (filters.status !== '' && filters.status !== undefined && filters.status !== null) {
+    feedbacks = feedbacks.filter((item) => Number(item.status) === Number(filters.status))
+  }
+
+  return {
+    code: 200,
+    message: 'success',
+    data: feedbacks,
+  }
+}
+
+export function mockGetAqiFeedbackById(id) {
+  const feedback = readFeedbacks().find((item) => item.id === id)
+
+  if (!feedback) {
+    return {
+      code: 404,
+      message: '未找到反馈信息',
+      data: null,
+    }
+  }
+
+  return {
+    code: 200,
+    message: 'success',
+    data: feedback,
+  }
+}
+
+export function mockAssignAqiFeedback(payload) {
+  const feedbacks = readFeedbacks()
+  const target = feedbacks.find((item) => item.id === payload.feedbackId)
+
+  if (!target) {
+    return {
+      code: 404,
+      message: '未找到反馈信息',
+      data: null,
+    }
+  }
+
+  Object.assign(target, {
+    gridMemberId: payload.gridMemberId,
+    gridMemberName: payload.gridMemberName,
+    status: 1,
+    assignTime: new Date().toLocaleString('zh-CN', { hour12: false }),
+  })
+
+  writeFeedbacks(feedbacks)
+
+  return {
+    code: 200,
+    message: '指派成功',
+    data: target,
+  }
+}
