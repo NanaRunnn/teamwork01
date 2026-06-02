@@ -1,7 +1,7 @@
 <script setup>
 import { computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Location, ChatLineRound, Upload } from '@element-plus/icons-vue'
+import { ChatLineRound, Location, Upload } from '@element-plus/icons-vue'
 
 const districtOptions = [
   { label: '朝阳区', value: 'chaoyang' },
@@ -46,7 +46,8 @@ const submitFeedback = () => {
   <main class="feedback-page">
     <el-container class="page-shell">
       <el-header class="page-header">
-        <p class="eyebrow">空气质量反馈</p>
+        <el-button text @click="$router.push('/')">返回首页</el-button>
+        <p class="eyebrow">公众监督员端</p>
         <h1>提交所在网格空气情况</h1>
       </el-header>
 
@@ -145,6 +146,10 @@ const submitFeedback = () => {
 .page-header {
   height: auto;
   padding: 16px 0 22px;
+}
+
+.page-header .el-button {
+  margin: 0 0 18px -12px;
 }
 
 .eyebrow {
