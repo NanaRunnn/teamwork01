@@ -2,6 +2,13 @@
 import { computed, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ChatLineRound, Location, Upload } from '@element-plus/icons-vue'
+import { useRouter } from 'vue-router'
+import { saveAqiFeedback } from '../../api/aqiFeedback'
+import SupervisorShell from '../../components/SupervisorShell.vue'
+import { getSupervisorUser } from '../../utils/auth'
+import { getAqiLevel } from '../../utils/aqi'
+
+const router = useRouter()
 
 const districtOptions = [
   { label: '朝阳区', value: 'chaoyang' },
@@ -19,157 +26,126 @@ const selectedDistrictName = computed(() => {
   return districtOptions.find((item) => item.value === form.district)?.label || ''
 })
 
-const aqiLevel = computed(() => {
-  if (form.aqi <= 50) return { text: '优', color: '#2f9e44' }
-  if (form.aqi <= 100) return { text: '良', color: '#f59f00' }
-  if (form.aqi <= 150) return { text: '轻度污染', color: '#f76707' }
-  if (form.aqi <= 200) return { text: '中度污染', color: '#e03131' }
-  if (form.aqi <= 300) return { text: '重度污染', color: '#9c36b5' }
-  return { text: '严重污染', color: '#862e9c' }
-})
+const aqiLevel = computed(() => getAqiLevel(form.aqi))
 
-const submitFeedback = () => {
-  const payload = {
-    district: form.district,
-    districtName: selectedDistrictName.value,
-    aqi: form.aqi,
-    level: aqiLevel.value.text,
-    content: form.content.trim(),
+async function submitFeedback() {
+  const user = getSupervisorUser()
+
+  if (!user) {
+    ElMessage.warning('请先登录公众监督员账号')
+    router.push('/supervisor/login')
+    return
   }
 
-  console.log('空气质量反馈表单数据:', payload)
-  ElMessage.success('反馈已提交')
+  if (!form.district || !form.content.trim()) {
+    ElMessage.warning('请选择网格地址并填写反馈内容')
+    return
+  }
+
+  const payload = {
+    supervisorId: user.id,
+    supervisorName: user.realName,
+    provinceId: 'beijing',
+    provinceName: '北京市',
+    cityId: form.district,
+    cityName: selectedDistrictName.value,
+    estimatedAqi: form.aqi,
+    level: aqiLevel.value.text,
+    description: form.content.trim(),
+  }
+
+  const result = await saveAqiFeedback(payload)
+
+  if (result.code !== 200) {
+    ElMessage.error(result.message)
+    return
+  }
+
+  console.log('空气质量反馈表单数据:', result.data)
+  ElMessage.success(result.message)
+  form.district = ''
+  form.aqi = 80
+  form.content = ''
+  router.push('/supervisor/history')
 }
 </script>
 
 <template>
-  <main class="feedback-page">
-    <el-container class="page-shell">
-      <el-header class="page-header">
-        <el-button text @click="$router.push('/')">返回首页</el-button>
-        <p class="eyebrow">公众监督员端</p>
-        <h1>提交所在网格空气情况</h1>
-      </el-header>
+  <SupervisorShell title="提交所在网格空气情况">
+    <el-form class="feedback-form" label-position="top">
+      <el-form-item label="网格地址">
+        <el-select
+          v-model="form.district"
+          class="field-control"
+          placeholder="请选择所在区域"
+          size="large"
+        >
+          <el-option
+            v-for="item in districtOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
 
-      <el-main class="page-main">
-        <el-form class="feedback-form" label-position="top">
-          <el-form-item label="网格地址">
-            <el-select
-              v-model="form.district"
-              class="field-control"
-              placeholder="请选择所在区域"
-              size="large"
-            >
-              <el-option
-                v-for="item in districtOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item label="空气质量指数等级">
-            <div class="slider-panel">
-              <div class="aqi-summary">
-                <span class="aqi-number">{{ form.aqi }}</span>
-                <span class="aqi-level" :style="{ color: aqiLevel.color }">
-                  {{ aqiLevel.text }}
-                </span>
-              </div>
-              <el-slider
-                v-model="form.aqi"
-                :min="0"
-                :max="500"
-                :step="1"
-                show-input
-                class="aqi-slider"
-              />
-            </div>
-          </el-form-item>
-
-          <el-form-item label="反馈内容">
-            <el-input
-              v-model="form.content"
-              class="field-control"
-              type="textarea"
-              :rows="5"
-              maxlength="300"
-              show-word-limit
-              resize="none"
-              placeholder="请描述附近空气情况，例如异味、扬尘、烟雾或其他观察到的问题"
-            />
-          </el-form-item>
-
-          <el-button
-            class="submit-button"
-            type="primary"
-            size="large"
-            @click="submitFeedback"
-          >
-            <el-icon><Upload /></el-icon>
-            提交反馈
-          </el-button>
-        </el-form>
-      </el-main>
-
-      <el-footer class="page-footer">
-        <div class="footer-item">
-          <el-icon><Location /></el-icon>
-          <span>{{ selectedDistrictName || '未选择网格' }}</span>
+      <el-form-item label="空气质量指数等级">
+        <div class="slider-panel">
+          <div class="aqi-summary">
+            <span class="aqi-number">{{ form.aqi }}</span>
+            <span class="aqi-level" :style="{ color: aqiLevel.color }">
+              {{ aqiLevel.text }}
+            </span>
+          </div>
+          <el-slider
+            v-model="form.aqi"
+            :min="0"
+            :max="500"
+            :step="1"
+            show-input
+            class="aqi-slider"
+          />
         </div>
-        <div class="footer-item">
-          <el-icon><ChatLineRound /></el-icon>
-          <span>反馈将用于空气质量巡查</span>
-        </div>
-      </el-footer>
-    </el-container>
-  </main>
+      </el-form-item>
+
+      <el-form-item label="反馈内容">
+        <el-input
+          v-model="form.content"
+          class="field-control"
+          type="textarea"
+          :rows="5"
+          maxlength="300"
+          show-word-limit
+          resize="none"
+          placeholder="请描述附近空气情况，例如异味、扬尘、烟雾或其他观察到的问题"
+        />
+      </el-form-item>
+
+      <el-button
+        class="submit-button"
+        type="primary"
+        size="large"
+        @click="submitFeedback"
+      >
+        <el-icon><Upload /></el-icon>
+        提交反馈
+      </el-button>
+    </el-form>
+
+    <el-footer class="page-footer">
+      <div class="footer-item">
+        <el-icon><Location /></el-icon>
+        <span>{{ selectedDistrictName || '未选择网格' }}</span>
+      </div>
+      <div class="footer-item">
+        <el-icon><ChatLineRound /></el-icon>
+        <span>反馈将用于空气质量巡查</span>
+      </div>
+    </el-footer>
+  </SupervisorShell>
 </template>
 
 <style scoped>
-.feedback-page {
-  min-height: 100vh;
-  background:
-    linear-gradient(135deg, rgba(64, 158, 255, 0.16), rgba(103, 194, 58, 0.12)),
-    #f5f7fb;
-  color: #1f2d3d;
-}
-
-.page-shell {
-  width: min(100%, 760px);
-  min-height: 100vh;
-  margin: 0 auto;
-  padding: 28px 20px;
-}
-
-.page-header {
-  height: auto;
-  padding: 16px 0 22px;
-}
-
-.page-header .el-button {
-  margin: 0 0 18px -12px;
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  color: #409eff;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.25;
-  font-weight: 800;
-}
-
-.page-main {
-  padding: 0;
-}
-
 .feedback-form {
   padding: 24px;
   border: 1px solid #e4e7ed;
@@ -240,18 +216,6 @@ const submitFeedback = () => {
 }
 
 @media (max-width: 480px) {
-  .page-shell {
-    padding: 20px 14px;
-  }
-
-  .page-header {
-    padding-bottom: 18px;
-  }
-
-  .page-header h1 {
-    font-size: 24px;
-  }
-
   .feedback-form {
     padding: 18px 14px;
   }
