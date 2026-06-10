@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.nep.mapper.SupervisorMapper">
+
+    <resultMap id="BaseResultMap" type="com.neusoft.nep.model.entity.Supervisor">
+        <id column="id" property="id"/>
+        <result column="phone" property="phone"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.neusoft.nep.model.entity.Supervisor">
+        INSERT INTO supervisor (id, phone, password, real_name)
+        VALUES (#{id}, #{phone}, #{password}, #{realName})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT id, phone, password, real_name FROM supervisor WHERE id = #{id}
+    </select>
+
+    <select id="selectByPhone" resultMap="BaseResultMap">
+        SELECT id, phone, password, real_name FROM supervisor WHERE phone = #{phone}
+    </select>
+
+    <select id="selectByPhoneAndPassword" resultMap="BaseResultMap">
+        SELECT id, phone, password, real_name FROM supervisor WHERE phone = #{phone} AND password = #{password}
+    </select>
+
+</mapper>

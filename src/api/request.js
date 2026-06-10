@@ -2,7 +2,7 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_BASE || '/api',
   timeout: 10000,
 })
 
@@ -24,3 +24,5 @@ request.interceptors.response.use(
 )
 
 export default request
+
+export const useRealApi = import.meta.env.VITE_USE_REAL_API === 'true'

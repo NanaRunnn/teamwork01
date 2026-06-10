@@ -27,3 +27,25 @@ textarea {
 #app {
   min-height: 100vh;
 }
+
+.global-actions {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 3000;
+  display: grid;
+  gap: 10px;
+}
+
+.global-actions .el-button {
+  width: 42px;
+  height: 42px;
+  box-shadow: 0 12px 30px rgba(31, 45, 61, 0.2);
+}
+
+@media (max-width: 480px) {
+  .global-actions {
+    right: 12px;
+    bottom: 12px;
+  }
+}

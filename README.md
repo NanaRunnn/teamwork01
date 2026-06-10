@@ -9,7 +9,7 @@
 - 网格员端：登录、查看任务、查看任务详情、提交 AQI 检测确认数据。
 - 决策者端：查看空气质量统计可视化大屏。
 
-当前项目使用 localStorage mock 数据完成前端演示闭环，暂未接真实后端。
+当前项目默认使用 localStorage mock 数据完成前端演示闭环。仓库已包含 Spring Boot 后端代码，前端可通过环境变量切换到真实后端接口。
 
 ## 运行方式
 
@@ -22,6 +22,23 @@ npm run dev
 
 ```bash
 npm run build
+```
+
+真实后端联调：
+
+```bash
+copy .env.example .env
+```
+
+将 `.env` 中的 `VITE_USE_REAL_API` 改为 `true`，启动后端 `backend` 项目后再运行前端。Vite 已配置 `/api` 代理到 `http://localhost:8080`。
+
+后端目录：
+
+```txt
+backend/
+  pom.xml
+  sql/init.sql
+  src/main/java/com/neusoft/nep
 ```
 
 ## 默认账号
@@ -46,6 +63,7 @@ npm run build
 ## 说明
 
 - 当前接口文件位于 `src/api`，现阶段返回 mock 数据。
+- `VITE_USE_REAL_API=true` 时，`src/api` 会通过 Axios 请求 Spring Boot 后端。
 - 省份、网格区域已通过 `gridProvince`、`gridCity` 接口层动态加载，后端联调时替换接口实现即可。
 - mock 数据位于 `src/mock`，通过 localStorage 持久化。
 - `src/api/request.js` 已预留 Axios 配置，供后续后端联调使用。

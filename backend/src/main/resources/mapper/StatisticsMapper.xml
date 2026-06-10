@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.nep.mapper.StatisticsMapper">
+
+    <resultMap id="BaseResultMap" type="com.neusoft.nep.model.entity.Statistics">
+        <id column="id" property="id"/>
+        <result column="feedback_id" property="feedbackId"/>
+        <result column="grid_member_id" property="gridMemberId"/>
+        <result column="so2" property="so2"/>
+        <result column="co" property="co"/>
+        <result column="pm25" property="pm25"/>
+        <result column="aqi" property="aqi"/>
+        <result column="confirm_time" property="confirmTime"/>
+        <result column="grid_member_name" property="gridMemberName"/>
+        <result column="province_name" property="provinceName"/>
+        <result column="city_name" property="cityName"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.neusoft.nep.model.entity.Statistics">
+        INSERT INTO statistics (id, feedback_id, grid_member_id, so2, co, pm25, aqi, confirm_time)
+        VALUES (#{id}, #{feedbackId}, #{gridMemberId}, #{so2}, #{co}, #{pm25}, #{aqi}, #{confirmTime})
+    </insert>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT s.*,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM statistics s
+        LEFT JOIN grid_member gm ON s.grid_member_id = gm.id
+        LEFT JOIN aqi_feedback f ON s.feedback_id = f.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        ORDER BY s.confirm_time DESC
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT s.*,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM statistics s
+        LEFT JOIN grid_member gm ON s.grid_member_id = gm.id
+        LEFT JOIN aqi_feedback f ON s.feedback_id = f.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        WHERE s.id = #{id}
+    </select>
+
+    <!-- 省份维度统计 -->
+    <select id="selectProvinceItemTotal" resultType="java.util.HashMap">
+        SELECT gp.name AS provinceName, COUNT(*) AS total
+        FROM statistics s
+        LEFT JOIN aqi_feedback f ON s.feedback_id = f.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        GROUP BY gp.id, gp.name
+        ORDER BY total DESC
+    </select>
+
+    <!-- AQI指数分布统计 -->
+    <select id="selectAqiDistribute" resultType="java.util.HashMap">
+        SELECT
+            CASE
+                WHEN s.aqi BETWEEN 0 AND 50 THEN '优'
+                WHEN s.aqi BETWEEN 51 AND 100 THEN '良'
+                WHEN s.aqi BETWEEN 101 AND 150 THEN '轻度污染'
+                WHEN s.aqi BETWEEN 151 AND 200 THEN '中度污染'
+                WHEN s.aqi BETWEEN 201 AND 300 THEN '重度污染'
+                ELSE '严重污染'
+            END AS level,
+            COUNT(*) AS total
+        FROM statistics s
+        GROUP BY level
+        ORDER BY MIN(s.aqi)
+    </select>
+
+</mapper>

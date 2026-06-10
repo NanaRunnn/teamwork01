@@ -16,9 +16,16 @@ const filters = ref({
 })
 
 const filteredRecords = computed(() => {
+  const selectedProvince = provinceOptions.value.find((item) => item.id === filters.value.provinceId)
+  const selectedCity = cityOptions.value.find((item) => item.id === filters.value.cityId)
+
   return records.value.filter((item) => {
-    const provinceMatched = !filters.value.provinceId || item.provinceId === filters.value.provinceId
-    const cityMatched = !filters.value.cityId || item.cityId === filters.value.cityId
+    const provinceMatched = !filters.value.provinceId ||
+      item.provinceId === filters.value.provinceId ||
+      item.provinceName === selectedProvince?.name
+    const cityMatched = !filters.value.cityId ||
+      item.cityId === filters.value.cityId ||
+      item.cityName === selectedCity?.name
 
     return provinceMatched && cityMatched
   })

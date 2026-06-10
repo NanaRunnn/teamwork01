@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neusoft.nep.mapper.AqiFeedbackMapper">
+
+    <resultMap id="BaseResultMap" type="com.neusoft.nep.model.entity.AqiFeedback">
+        <id column="id" property="id"/>
+        <result column="supervisor_id" property="supervisorId"/>
+        <result column="grid_member_id" property="gridMemberId"/>
+        <result column="province_id" property="provinceId"/>
+        <result column="city_id" property="cityId"/>
+        <result column="estimated_aqi" property="estimatedAqi"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="supervisor_real_name" property="supervisorRealName"/>
+        <result column="supervisor_phone" property="supervisorPhone"/>
+        <result column="grid_member_name" property="gridMemberName"/>
+        <result column="province_name" property="provinceName"/>
+        <result column="city_name" property="cityName"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.neusoft.nep.model.entity.AqiFeedback">
+        INSERT INTO aqi_feedback (id, supervisor_id, grid_member_id, province_id, city_id, estimated_aqi, description, status, create_time)
+        VALUES (#{id}, #{supervisorId}, #{gridMemberId}, #{provinceId}, #{cityId}, #{estimatedAqi}, #{description}, #{status}, #{createTime})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT f.*,
+               s.real_name AS supervisor_real_name,
+               s.phone AS supervisor_phone,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM aqi_feedback f
+        LEFT JOIN supervisor s ON f.supervisor_id = s.id
+        LEFT JOIN grid_member gm ON f.grid_member_id = gm.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        WHERE f.id = #{id}
+    </select>
+
+    <select id="selectBySupervisorId" resultMap="BaseResultMap">
+        SELECT f.*,
+               s.real_name AS supervisor_real_name,
+               s.phone AS supervisor_phone,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM aqi_feedback f
+        LEFT JOIN supervisor s ON f.supervisor_id = s.id
+        LEFT JOIN grid_member gm ON f.grid_member_id = gm.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        WHERE f.supervisor_id = #{supervisorId}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="selectByGridMemberId" resultMap="BaseResultMap">
+        SELECT f.*,
+               s.real_name AS supervisor_real_name,
+               s.phone AS supervisor_phone,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM aqi_feedback f
+        LEFT JOIN supervisor s ON f.supervisor_id = s.id
+        LEFT JOIN grid_member gm ON f.grid_member_id = gm.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        WHERE f.grid_member_id = #{gridMemberId}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT f.*,
+               s.real_name AS supervisor_real_name,
+               s.phone AS supervisor_phone,
+               gm.real_name AS grid_member_name,
+               gp.name AS province_name,
+               gc.name AS city_name
+        FROM aqi_feedback f
+        LEFT JOIN supervisor s ON f.supervisor_id = s.id
+        LEFT JOIN grid_member gm ON f.grid_member_id = gm.id
+        LEFT JOIN grid_province gp ON f.province_id = gp.id
+        LEFT JOIN grid_city gc ON f.city_id = gc.id
+        <where>
+            <if test="status != null">
+                AND f.status = #{status}
+            </if>
+            <if test="provinceId != null and provinceId != ''">
+                AND f.province_id = #{provinceId}
+            </if>
+            <if test="cityId != null and cityId != ''">
+                AND f.city_id = #{cityId}
+            </if>
+        </where>
+        ORDER BY f.create_time DESC
+    </select>
+
+    <update id="updateAssign">
+        UPDATE aqi_feedback SET grid_member_id = #{gridMemberId}, status = #{status} WHERE id = #{id}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE aqi_feedback SET status = #{status} WHERE id = #{id}
+    </update>
+
+</mapper>

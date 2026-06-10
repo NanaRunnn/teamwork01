@@ -3,9 +3,12 @@ import {
   DataAnalysis,
   Guide,
   Management,
+  RefreshLeft,
   UserFilled,
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import RoleCard from '../components/RoleCard.vue'
+import { clearAllUsers } from '../utils/auth'
 
 const roles = [
   {
@@ -37,14 +40,27 @@ const roles = [
     icon: DataAnalysis,
   },
 ]
+
+function resetDemo() {
+  clearAllUsers()
+  ElMessage.success('已清除登录状态，请重新选择角色登录')
+}
 </script>
 
 <template>
   <main class="home-page">
     <el-container class="home-shell">
       <el-header class="home-header">
-        <p class="eyebrow">东软环保公众监督系统</p>
-        <h1>请选择使用端</h1>
+        <div class="header-top">
+          <div>
+            <p class="eyebrow">东软环保公众监督系统</p>
+            <h1>请选择使用端</h1>
+          </div>
+          <el-button @click="resetDemo">
+            <el-icon><RefreshLeft /></el-icon>
+            清除登录状态
+          </el-button>
+        </div>
       </el-header>
 
       <el-main class="home-main">
@@ -86,6 +102,17 @@ const roles = [
   padding: 24px 0 28px;
 }
 
+.header-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-top .el-button .el-icon {
+  margin-right: 4px;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: #409eff;
@@ -115,6 +142,11 @@ h1 {
 
   .home-header {
     padding: 16px 0 20px;
+  }
+
+  .header-top {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   h1 {

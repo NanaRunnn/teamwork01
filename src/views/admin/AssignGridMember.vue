@@ -96,7 +96,7 @@ onMounted(async () => {
               :label="member.id"
               border
             >
-              {{ member.realName }}（{{ member.code }} / {{ member.cityName }}）
+              {{ member.realName }}（{{ member.code }} / {{ member.cityName || feedback.cityName }}）
             </el-radio>
           </el-radio-group>
         </el-form-item>

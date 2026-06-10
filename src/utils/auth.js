@@ -56,3 +56,9 @@ export function setGridUser(user) {
 export function clearGridUser() {
   localStorage.removeItem(GRID_USER_KEY)
 }
+
+export function clearAllUsers() {
+  clearSupervisorUser()
+  clearAdminUser()
+  clearGridUser()
+}
